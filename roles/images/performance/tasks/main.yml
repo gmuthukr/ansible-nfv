@@ -9,6 +9,7 @@
 
 - name: Fetch image
   include_tasks: fetch_image.yml
+  when: fetched_image is not defined | default(True)
 
 - name: Prepare repos inside image
   include_tasks: prepare_repos.yml
