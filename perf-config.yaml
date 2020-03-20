@@ -1,0 +1,26 @@
+hugepages_count: 2
+multiqueue_set: False
+
+trex_set_vlan: True
+trex_process_threads: 2
+trex_flows: 1
+trex_rate: 2
+trex_validation: 120
+trex_search: 120
+trex_platform:
+  master_thread_id: 0
+  latency_thread_id: 1
+  dual_if:
+    - socket: 0
+      threads: [2, 3]
+
+trex_lcores: '2,3'
+testpmd_lcores: '1,2,3'
+testpmd_forward_cores: 2
+forward_mode: 'mac'
+
+# Default emulatorpin parameters
+cpu_list: '0,12'
+
+# EMC insertion probability
+emc_insert_inv_prob: 1
