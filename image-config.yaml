@@ -1,0 +1,9 @@
+customization_host: localhost
+
+trex_url: https://trex-tgn.cisco.com/trex/release
+trex_version: v2.43
+dpdk_branch: v17.05
+
+user_commands:
+  - systemctl disable chronyd.service
+  - systemctl mask chronyd.service
