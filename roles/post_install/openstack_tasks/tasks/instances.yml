@@ -11,6 +11,7 @@
     image: "{{ item.image | default(images[0].name) }}"
     flavor: "{{ item.flavor | default(flavors[0].name) }}"
     volumes: "{% if 'dynamicinstance' in item.name %}['{{ item.name | replace('dynamicinstance', 'dynamicvolume') }}']{% else %}{{ [] }} {% endif %}"
+    availability_zone: "{{ item.availability_zone | default(aggregate_groups[0].name) }}"
     key_name: "{{ item.key_name | default(omit) }}"
     security_groups: "{{ item.sec_groups | default(omit) }}"
     userdata: "{% if item.userdata is defined %}{{ item.userdata }}{% else %}{{ global_userdata | default(omit) }}{% endif %}"
