@@ -128,13 +128,16 @@ dns_nameservers:
 
 # Aggregate group creation
 aggregate_groups:
-  - name: dut
+  - name: dut0
     hosts:
       - overcloud-computeovsdpdksriov-0.localdomain
+    metadata:
+      - flavor=dut
+  - name: dut1
+    hosts:
       - overcloud-computeovsdpdksriov-1.localdomain
     metadata:
       - flavor=dut
-
 
 images:
   - name: centos7cloud
@@ -189,6 +192,7 @@ instances:
     groups: dpdk_dut
     flavor: dut
     image: centos7cloud
+    availability_zone: dut0
     config_drive: true
     key_name: "{{ keypair_name }}"
     sec_groups: test_secgroup
@@ -206,10 +210,11 @@ instances:
         type: normal
     nics: net-name=mgmt_dpdk1,port-name=testpmd_net_nic0_308_dpdk_dut_port-0,port-name=testpmd_net_nic1_309_dpdk_dut_port-1
 
-  - name: iperf_client
+  - name: iperf_client0
     groups: dpdk_dut
     flavor: dut
     image: centos7cloud
+    availability_zone: dut0
     config_drive: true
     key_name: "{{ keypair_name }}"
     sec_groups: test_secgroup
@@ -226,6 +231,28 @@ instances:
         port_security: false
         type: normal
     nics: net-name=mgmt_dpdk1,port-name=testpmd_net_nic0_308_dpdk_dut_port-2,port-name=testpmd_net_nic1_309_dpdk_dut_port-3
+
+  - name: iperf_client
+    groups: dpdk_dut
+    flavor: dut
+    image: centos7cloud
+    availability_zone: dut1
+    config_drive: true
+    key_name: "{{ keypair_name }}"
+    sec_groups: test_secgroup
+    floating_ip:
+      ext_net: datacentre
+      int_net: mgmt_dpdk1
+    net_ports:
+      - name: testpmd_net_nic0_308_dpdk_dut_port-4
+        network: testpmd_net_nic0_308
+        port_security: false
+        type: normal
+      - name: testpmd_net_nic1_309_dpdk_dut_port-5
+        network: testpmd_net_nic1_309
+        port_security: false
+        type: normal
+    nics: net-name=mgmt_dpdk1,port-name=testpmd_net_nic0_308_dpdk_dut_port-4,port-name=testpmd_net_nic1_309_dpdk_dut_port-5
 
 hugepages_count: 2
 multiqueue_set: False
