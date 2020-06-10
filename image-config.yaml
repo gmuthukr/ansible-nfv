@@ -7,3 +7,5 @@ dpdk_branch: v17.05
 user_commands:
   - systemctl disable chronyd.service
   - systemctl mask chronyd.service
+
+fio_customization_log: /tmp/fio.log
