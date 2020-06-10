@@ -1,0 +1,33 @@
+- name: Generate traffic for load balancing PMD
+  shell: python -u {{ trafficgen_dir }}/trex-txrx.py
+      --device-pairs=0:1
+      --active-device-pairs=0:1
+      --mirrored-log
+      {% if dut_type == 'dpdk' %}
+        --rate {{ trex_rate }}
+      {%- endif %}
+      --rate-unit=mpps
+      --size={{ trex_frame_size }}
+      --runtime={{ pmd_lb_pretest_sec }}
+      --runtime-tolerance=5
+      --run-bidirec=1
+      --run-revunidirec=0
+      --num-flows={{ trex_flows }}
+      --dst-macs={{ dut_macs }}
+      {% if trex_set_vlan %}
+        --vlan-ids={{ trex_instance_sriov_vlans|join(',') }}
+      {%- endif %}
+      --use-src-ip-flows=1
+      --use-dst-ip-flows=1
+      --use-src-mac-flows=0
+      --use-dst-mac-flows=0
+      --use-src-port-flows=1
+      --use-dst-port-flows=1
+      --use-protocol-flows=0
+      --packet-protocol=UDP
+      --stream-mode=continuous
+  until: pmd_lb_pretest_output.rc == 0
+  retries: 2
+  delay: 10
+  ignore_errors: yes
+  failed_when: False

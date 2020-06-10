@@ -1,0 +1,20 @@
+# Enable PMD load balance in DuT
+# Possible values are:
+#   ovs
+#     - load balance by ovs autolb.
+#   user
+#     - load balance by user application.
+#   None
+#     - no load balance performed.
+#
+pmd_lb: None
+
+# Perform load balance before binary search test
+# when pmd_lb is set.
+pmd_lb_pretest: True
+
+# Time period for pretest.
+pmd_lb_pretest_sec: None
+
+# Status of PMD load balance
+pmd_lb_status_log: '/tmp/pmd_lb_status.log'

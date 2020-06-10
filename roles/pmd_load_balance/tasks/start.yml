@@ -1,0 +1,26 @@
+- name: Start OVS controlled PMD load balance in DuT
+  shell: ovs-vsctl set Open_vSwitch . other_config:pmd-auto-lb='true'
+  register: pmd_lb_start_output
+  when:
+    - pmd_lb == 'ovs'
+
+- name: Start user controlled PMD load balance in DuT
+  shell: |
+    podman exec openvswitch_dpdk_netcontrold ncd_ctl stop
+    podman exec openvswitch_dpdk_netcontrold ncd_ctl start
+    podman exec openvswitch_dpdk_netcontrold ncd_ctl config rebalance on
+  register: pmd_lb_start_output
+  when:
+    - pmd_lb == 'user'
+
+- debug:
+    var: pmd_lb_start_output
+
+- name: Load balance before tests
+  import_tasks: pretest.yml
+  register: pmd_lb_pretest_output
+  when:
+    - pmd_lb_pretest is defined and pmd_lb_pretest
+
+- debug:
+    var: pmd_lb_pretest_output
