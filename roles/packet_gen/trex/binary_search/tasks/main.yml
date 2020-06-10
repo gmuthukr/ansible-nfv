@@ -6,6 +6,26 @@
     - hostvars[groups[dut_group][0]]['dut_macs'] is defined
     - dut_macs is not defined
 
+- name: Report unsupported load balance control if requested
+  fail: msg="unsupported load balance '{{ pmd_lb }}' is requested"
+  when:
+    - pmd_lb not in ['ovs', 'user']
+
+- name: Initialize PMD load balance
+  block:
+    - name: Set time period for load balance pretest profile
+      set_fact:
+        pmd_lb_pretest_sec: "{{ trex_search }}"
+      when:
+        - pmd_lb_pretest_sec is not defined
+
+    - name: Start PMD load balance in DuT
+      include_tasks: pmd_load_balance/start.yml
+  delegate_to: "{{ dut_compute }}"
+  become: True
+  when:
+    - pmd_lb in ['ovs', 'user']
+
 - name: Set Binary Search Command
   set_fact:
     traffic_cmd: >
@@ -32,6 +52,15 @@
   when: traffic_cmd is not defined
 
 # TODO: Proper print function
+- name: Pause PMD load balance
+  become: True
+  delegate_to: "{{ dut_compute }}"
+  block:
+    - include_tasks: pmd_load_balance/pause.yml
+  when:
+    - pmd_lb in ['ovs', 'user']
+    - pmd_lb_pretest == True
+
 - name: Run Binary Search Script
   shell: "{{ traffic_cmd }}"
   register: perf_output
@@ -44,6 +73,26 @@
 
 - debug:
     var: perf_output
+
+- name: Stop PMD load balance and report its status
+  block:
+    - name: Stop PMD load balance in DuT
+      include_tasks: pmd_load_balance/stop.yml
+
+    - name: Status of PMD load balance
+      include_tasks: pmd-load-balance/status.yml
+  delegate_to: "{{ dut_compute }}"
+  become: True
+  when:
+    - pmd_lb in ['ovs', 'user']
+
+- name: Save PMD load balance status into File
+  copy:
+    content: "{{ pmd_lb_status_output['stdout'] }}"
+    dest: "{{ pmd_lb_status_log }}"
+  delegate_to: "{{ groups['undercloud'] | first }}"
+  when:
+    - pmd_lb in ['ovs', 'user']
 
 - name: Save Binary Search Script Result To File
   copy:
