@@ -165,6 +165,7 @@ flavors:
 keypair_name: test_keypair
 resources_output_file: /home/stack/resources_output_file.yml
 dut_group: dpdk_dut
+hci_group: dpdk_dut
 dut_type: dpdk
 
 # Allow ICPM and SSH access to instances
