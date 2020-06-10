@@ -140,15 +140,16 @@ aggregate_groups:
     metadata:
       - flavor=dut
 
+guest_image: file:///home/kvm/images/CentOS-7-x86_64-GenericCloud.qcow2
 
 images:
   - name: centos7cloud
-    url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+    url: file:///tmp/CentOS-7-x86_64-GenericCloud.qcow2
     properties:
       hw_vif_multiqueue_enabled: "false"
     
   - name: centos7cloud_mq
-    url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+    url: file:///tmp/CentOS-7-x86_64-GenericCloud.qcow2
     properties:
       hw_vif_multiqueue_enabled: "true"
 
