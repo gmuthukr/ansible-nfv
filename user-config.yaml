@@ -21,8 +21,9 @@ overcloud_name: overcloud
 cloud_name: overcloud
 
 dut_compute: overcloud-computeovsdpdksriov-0
-pmd_lb: ovs
+pmd_lb: user
 pmd_lb_pretest: True
+pmd_lb_pretest_sec: 180
 
 # User creation
 users:
@@ -249,8 +250,9 @@ trex_set_vlan: True
 trex_process_threads: 2
 trex_flows: 1
 trex_rate: 2
-trex_validation: 120
-trex_search: 300
+trex_max_lost_pct: 50
+trex_validation: 30
+trex_search: 30
 trex_platform:
   master_thread_id: 0
   latency_thread_id: 1
