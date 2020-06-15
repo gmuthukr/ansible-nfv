@@ -127,13 +127,6 @@
       when: launch_testpmd | default(True)
 
 - hosts: trex
-  become: true
-  roles:
-    - role: tuning/cpu_pinning_huge_pages
-      vars:
-        cpu_pinning_cores: "{{ trex_lcores }}"
-
-- hosts: trex
   roles:
     - role: roles/packet_gen/trex/bind_dpdk_nics
       when: bind_dpdk_nics | default(True)
