@@ -1,0 +1,268 @@
+---
+
+# Tags
+setup_os_env: true
+user: true
+quota: true
+network: true
+net_port: true
+aggregate: true
+flavor: true
+image: true
+keypair: true
+security_group: true
+instance: true
+overcloud_delete: false
+resources_output: true
+resource_generate_inventory: true
+resource_state: present
+
+overcloud_name: overcloud
+cloud_name: overcloud
+
+dut_compute:
+  - overcloud-computeovsdpdksriov-0
+  - overcloud-computeovsdpdksriov-1
+
+# User creation
+users:
+  - name: admin
+    pass: ptBVnUnHR8AMNsy7E6MmeT6VA
+    project: admin
+    domain: default
+    role: admin
+
+# Network creation
+networks:
+  - allocation_pool_end: 172.20.0.226
+    allocation_pool_start: 172.20.0.216
+    cidr: 172.20.0.0/24
+    enable_dhcp: true
+    external: true
+    gateway_ip: 172.20.0.1
+    name: datacentre
+    network_type: flat
+    physical_network: datacentre
+    port_type: normal
+    router_name: router
+    shared: true
+  - allocation_pool_end: 50.0.2.100
+    allocation_pool_start: 50.0.2.10
+    cidr: 50.0.2.0/24
+    enable_dhcp: true
+    external: false
+    gateway_ip: 50.0.2.254
+    ip_version: 4
+    mgmt: true
+    name: mgmt_dpdk1
+    network_type: vlan
+    physical_network: dpdk1
+    port_type: normal
+    router_name: router
+    sec_groups: true
+    segmentation_id: '307'
+    tag: external
+  - allocation_pool_end: 50.0.3.100
+    allocation_pool_start: 50.0.3.10
+    cidr: 50.0.3.0/24
+    enable_dhcp: true
+    external: false
+    gateway_ip: 50.0.3.254
+    ip_version: 4
+    mgmt: true
+    name: mgmt_vxlan
+    network_type: vxlan
+    port_type: normal
+    router_name: router
+    sec_groups: true
+    tag: external
+  - name: 'testpmd_net_nic0_308'
+    allocation_pool_end: 50.0.4.100
+    allocation_pool_start: 50.0.4.10
+    cidr: 50.0.4.0/24
+    enable_dhcp: false
+    ip_version: 4
+    network_type: vlan
+    no_gateway_ip: true
+    physical_network: dpdk1
+    port_type: normal
+    sec_groups: true
+    segmentation_id: '308'
+  - name: 'testpmd_net_nic1_309'
+    allocation_pool_end: 50.0.5.100
+    allocation_pool_start: 50.0.5.10
+    cidr: 50.0.5.0/24
+    enable_dhcp: false
+    ip_version: 4
+    network_type: vlan
+    no_gateway_ip: true
+    physical_network: dpdk2
+    port_type: normal
+    sec_groups: true
+    segmentation_id: '309'
+  - name: 'sriov_net_nic0_308'
+    allocation_pool_end: 50.0.4.100
+    allocation_pool_start: 50.0.4.10
+    cidr: 50.0.4.0/24
+    enable_dhcp: false
+    ip_version: 4
+    network_type: vlan
+    no_gateway_ip: true
+    physical_network: sriov1
+    port_type: direct-physical
+    segmentation_id: '308'
+  - name: 'sriov_net_nic1_309'
+    allocation_pool_end: 50.0.5.100
+    allocation_pool_start: 50.0.5.10
+    cidr: 50.0.5.0/24
+    enable_dhcp: false
+    ip_version: 4
+    network_type: vlan
+    no_gateway_ip: true
+    physical_network: sriov2
+    port_type: direct-physical
+    segmentation_id: '309'
+dns_nameservers:
+  - 10.46.0.31
+  - 8.8.8.8
+
+# Aggregate group creation
+aggregate_groups:
+  - name: dut
+    hosts:
+      - overcloud-computeovsdpdksriov-0.localdomain
+      - overcloud-computeovsdpdksriov-1.localdomain
+    metadata:
+      - flavor=dut
+
+
+images:
+  - name: centos7cloud
+    url: file:///tmp/CentOS-7-x86_64-GenericCloud.qcow2
+    properties:
+      hw_vif_multiqueue_enabled: "false"
+    
+  - name: centos7cloud_mq
+    url: file:///tmp/CentOS-7-x86_64-GenericCloud.qcow2
+    properties:
+      hw_vif_multiqueue_enabled: "true"
+
+# Flavor creation
+flavors:
+  - name: dut
+    ram: 8192
+    disk: 20
+    vcpus: 4
+    extra_specs:
+        "hw:mem_page_size": "1GB"
+        "hw:cpu_policy": "dedicated"
+        "hw:numa_nodes": "1"
+        "hw:numa_cpus.0": "0,1,2,3"
+        "hw:numa_mem.0": "8192"
+        "aggregate_instance_extra_specs:flavor": "dut"
+
+# Keypair creation for the ssh keyless access
+keypair_name: test_keypair
+resources_output_file: /home/stack/resources_output_file.yml
+dut_group: dpdk_dut
+dut_type: dpdk
+
+# Allow ICPM and SSH access to instances
+security_groups:
+  - name: test_secgroup
+    rules:
+      - protocol: icmp
+        port_range_min: -1
+        port_range_max: -1
+        remote_ip_prefix: 0.0.0.0/0
+      - protocol: tcp
+        port_range_min: 22
+        port_range_max: 22
+        remote_ip_prefix: 0.0.0.0/0
+
+connection_user: centos
+
+# Instances creation
+instances:
+  - name: iperf_server
+    groups:
+      - dpdk_dut
+    flavor: dut
+    image: centos7cloud
+    config_drive: true
+    key_name: "{{ keypair_name }}"
+    sec_groups: test_secgroup
+    floating_ip:
+      ext_net: datacentre
+      int_net: mgmt_dpdk1
+    net_ports:
+      - name: testpmd_net_nic0_308_dpdk_dut_port-0
+        network: testpmd_net_nic0_308
+        port_security: false
+        type: normal
+      - name: testpmd_net_nic1_309_dpdk_dut_port-1
+        network: testpmd_net_nic1_309
+        port_security: false
+        type: normal
+    nics: net-name=mgmt_dpdk1,port-name=testpmd_net_nic0_308_dpdk_dut_port-0,port-name=testpmd_net_nic1_309_dpdk_dut_port-1
+
+  - name: iperf_client
+    groups:
+      - dpdk_dut
+    flavor: dut
+    image: centos7cloud
+    config_drive: true
+    key_name: "{{ keypair_name }}"
+    sec_groups: test_secgroup
+    floating_ip:
+      ext_net: datacentre
+      int_net: mgmt_dpdk1
+    net_ports:
+      - name: testpmd_net_nic0_308_dpdk_dut_port-2
+        network: testpmd_net_nic0_308
+        port_security: false
+        type: normal
+      - name: testpmd_net_nic1_309_dpdk_dut_port-3
+        network: testpmd_net_nic1_309
+        port_security: false
+        type: normal
+    nics: net-name=mgmt_dpdk1,port-name=testpmd_net_nic0_308_dpdk_dut_port-2,port-name=testpmd_net_nic1_309_dpdk_dut_port-3
+
+  - name: iperf_client_intra
+    groups:
+      - dpdk_dut
+
+    flavor: dut
+    image: centos7cloud
+    config_drive: true
+    key_name: "{{ keypair_name }}"
+    sec_groups: test_secgroup
+    floating_ip:
+      ext_net: datacentre
+      int_net: mgmt_dpdk1
+    net_ports:
+      - name: testpmd_net_nic0_308_dpdk_dut_port-4
+        network: testpmd_net_nic0_308
+        port_security: false
+        type: normal
+      - name: testpmd_net_nic1_309_dpdk_dut_port-5
+        network: testpmd_net_nic1_309
+        port_security: false
+        type: normal
+    nics: net-name=mgmt_dpdk1,port-name=testpmd_net_nic0_308_dpdk_dut_port-4,port-name=testpmd_net_nic1_309_dpdk_dut_port-5
+
+hugepages_count: 2
+multiqueue_set: False
+
+# Default emulatorpin parameters
+cpu_list: '0,12'
+
+# EMC insertion probability
+emc_insert_inv_prob: 100
+
+# iperf settings
+iperf_network: testpmd_net_nic1_309
+iperf_lcores: '1/2/3'
+
+fio_customization_log: '/tmp/fio.log'
+prepare_guest_hci: False
