@@ -238,3 +238,5 @@ emc_insert_inv_prob: 100
 
 # iperf settings
 iperf_lcores: '1/2/3'
+
+prepare_guest_hci: false
