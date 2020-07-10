@@ -1,0 +1,8 @@
+# testpmd binary
+l3fwd_bin: "{{ dpdk_root_dir }}/examples/l3fwd/build/l3fwd"
+
+# Map list of cores to physical cpu set
+l3fwd_lcores: '3,4,7'
+
+# Memory to allocate per socket
+l3fwd_socket_mem: 1024

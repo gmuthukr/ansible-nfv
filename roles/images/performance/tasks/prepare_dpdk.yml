@@ -27,6 +27,7 @@
       - "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=.*/CONFIG_RTE_LIBRTE_KNI=n/g' {{ dpdk_dir }}/config/common_linuxapp"
       - "sed -i 's/enforcing/{{ selinux_config }}/g' /etc/selinux/config /etc/selinux/config"
       - 'cd {{ dpdk_dir }}; /usr/bin/make config T=x86_64-native-linuxapp-gcc; /usr/bin/make'
+      - 'RTE_SDK={{ dpdk_dir }} RTE_TARGET=build /usr/bin/make -C {{ dpdk_dir }}/examples/l3fwd'
       - "echo 'DPDK Version: {{ dpdk_branch }}' | tee {{ dpdk_customization_log }}"
     image: "{{ fetched_image }}"
     debug: "{{ guest_debug }}"

@@ -1,0 +1,42 @@
+- name: Check If Tmux Sessions Are Running
+  shell: "tmux list-sessions -F '#S'"
+  register: tmux_sessions
+  failed_when: False
+
+- name: Kill Tmux Sessions
+  shell: "tmux list-sessions -F '#S' | xargs -n1 tmux kill-session -t"
+  when: tmux_sessions['stdout_lines'] != []
+
+- name: Set l3fwd Command If Not Defined
+  set_fact:
+    l3fwd_cmd: >
+      {{ l3fwd_bin }} -l {{ l3fwd_lcores }} --socket-mem {{ l3fwd_socket_mem }}
+      -- -p 0x3 --config='(0,0,1),(1,0,2)'
+      --eth-dest=0,{{hostvars[(groups['trex'] | first) ]['trex_instance_sriov_macs'][0]}}
+      --eth-dest=1,{{hostvars[(groups['trex'] | first) ]['trex_instance_sriov_macs'][1]}}
+      --parse-ptype &>/tmp/l3fwd.log
+  when: l3fwd_cmd is not defined
+
+- name: Log L3fwd Command
+  debug:
+    var: l3fwd_cmd
+
+- name: Run L3fwd In Dettached Tmux Session
+  shell: |
+    tmux new -d -s l3fwd
+    tmux send-keys -t l3fwd "{{ l3fwd_cmd }}" ENTER
+  become: True
+
+- name: Pause And Let L3fwd Run
+  pause:
+    seconds: 10
+
+- name: Query If L3fwd Aborted
+  slurp:
+    src: '/tmp/l3fwd.log'
+  register: l3fwd_log_output
+
+- name: Print L3fwd Error
+  fail:
+    msg: "{{ l3fwd_log_output['content'] | b64decode }}"
+  failed_when: "'Error' in l3fwd_log_output['content'] | b64decode"

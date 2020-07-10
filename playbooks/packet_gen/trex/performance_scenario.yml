@@ -126,6 +126,9 @@
     - role: roles/packet_gen/trex/launch_testpmd
       when: launch_testpmd | default(True)
 
+    - role: roles/packet_gen/trex/launch_l3fwd
+      when: launch_l3fwd | default(False)
+
 - hosts: trex
   roles:
     - role: roles/packet_gen/trex/bind_dpdk_nics
