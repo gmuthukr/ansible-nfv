@@ -21,9 +21,9 @@ overcloud_name: overcloud
 cloud_name: overcloud
 
 dut_compute: overcloud-computeovsdpdksriov-0
-pmd_lb: user
+
+pmd_lb: ovs
 pmd_lb_pretest: True
-pmd_lb_pretest_sec: 180
 
 # User creation
 users:
@@ -77,7 +77,7 @@ networks:
     router_name: router
     sec_groups: true
     tag: external
-  - name: 'testpmd_net_nic0_308'
+  - name: 'l3fwd_net_nic0_308'
     allocation_pool_end: 50.0.4.100
     allocation_pool_start: 50.0.4.10
     cidr: 50.0.4.0/24
@@ -89,7 +89,7 @@ networks:
     port_type: normal
     sec_groups: true
     segmentation_id: '308'
-  - name: 'testpmd_net_nic1_309'
+  - name: 'l3fwd_net_nic1_309'
     allocation_pool_end: 50.0.5.100
     allocation_pool_start: 50.0.5.10
     cidr: 50.0.5.0/24
@@ -223,7 +223,7 @@ instances:
         type: direct-physical
     nics: net-name=mgmt_vxlan,port-name=sriov_net_nic0_308_trex_direct-physical_port-0,port-name=sriov_net_nic1_309_trex_direct-physical_port-1
 
-  - name: testpmd-dpdk-dut
+  - name: l3fwd-dpdk-dut
     groups: dpdk_dut
     flavor: dut
     image: centos7cloud
@@ -234,15 +234,15 @@ instances:
       ext_net: datacentre
       int_net: mgmt_dpdk1
     net_ports:
-      - name: testpmd_net_nic0_308_dpdk_dut_port-0
-        network: testpmd_net_nic0_308
+      - name: l3fwd_net_nic0_308_dpdk_dut_port-0
+        network: l3fwd_net_nic0_308
         port_security: false
         type: normal
-      - name: testpmd_net_nic1_309_dpdk_dut_port-1
-        network: testpmd_net_nic1_309
+      - name: l3fwd_net_nic1_309_dpdk_dut_port-1
+        network: l3fwd_net_nic1_309
         port_security: false
         type: normal
-    nics: net-name=mgmt_dpdk1,port-name=testpmd_net_nic0_308_dpdk_dut_port-0,port-name=testpmd_net_nic1_309_dpdk_dut_port-1
+    nics: net-name=mgmt_dpdk1,port-name=l3fwd_net_nic0_308_dpdk_dut_port-0,port-name=l3fwd_net_nic1_309_dpdk_dut_port-1
 hugepages_count: 2
 multiqueue_set: False
 
@@ -262,8 +262,10 @@ trex_platform:
 
 trex_lcores: '2,3'
 testpmd_lcores: '1,2,3'
-testpmd_forward_cores: 2
-forward_mode: 'mac'
+l3fwd_lcores: '1,2'
+l3fwd_socket_mem: 1024
+launch_testpmd: False
+launch_l3fwd: True
 
 # Default emulatorpin parameters
 cpu_list: '0,12'
